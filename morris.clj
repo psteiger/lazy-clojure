@@ -2,12 +2,10 @@
   [coll]
   (loop [coll   coll
 	 result 1]
-    (cond (empty? coll)
-	    0
-	  (not= (first coll) (second coll))
-	    result
-	  :else
-	    (recur (rest coll) (inc result)))))
+    (cond
+      (empty? coll)                     0
+      (not= (first coll) (second coll)) result
+      :else                             (recur (rest coll) (inc result)))))
 
 (defn remove-consec
   "Same as above, but uses functional programming"
