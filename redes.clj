@@ -52,42 +52,29 @@ should be in the form: {:label1 distance1 :label2 distance2}"
     (some #{(first subcoll)} coll) (cons (first subcoll) (max-subseq (rest subcoll) coll))
     :else (max-subseq (rest subcoll) coll)))
 
-(defn dijkstra-search
-  "Dijkstra algorithm, in procedural style (functional Dijkstra
-  was too much difficult to implement)"
+(defn neighbors
+  "Returns a list of the neighbors of node in the network. No side-effects"
+  [node]
+  (keys (node @network)))
+
+(defn shortest-path
   [source]
-  (let [node-lst (ref (keys @network)) 
-	dist (ref (zipmap @node-lst       (for [x @network] Double/POSITIVE_INFINITY)))
-        src  (ref (zipmap (keys @network) (for [x @network] nil)))]
-    (pr "Setting dist from: " @dist)
-    (dosync (ref-set dist (merge @dist {source 0})))     ; set dist[source] to 0
-    (prn @dist)
-    (while (not (empty? @node-lst))	          ; while node-lst is not empty
-      (prn "Processing node-lst. Now: " @node-lst)
-      (prn "Src is:" @src)				
-      (let [u (key-by-value @dist
-			    (apply min (map #(%1 @dist) @node-lst)))] ; u := key in node-lst that maps to the min value in dist
-	(prn "Key 'u' in node-list that maps to the min value in dist:" u)
-	(prn "Removing u from node-lst. node-lst now:")
-	(dosync (ref-set node-lst (del @node-lst u)))
-	(prn @node-lst)
-	(if (infinite? (u @dist))    ; if this key dist to source is infinite
-	  (do (prn "Key is infinite:" u) @dist) ; all other vertices are inaccessible from src
-	  (do ; remove u from node-lst
-	   (loop [v (get-neighbors u)]
-	      (prn "V is" v) 		; for each neighbor v of u
-	      (cond (empty? v)
-		    @dist
-		    (for [v v] v)
-		    (do
-		      (for [v v] ; if v still exists in node-
-			(do (prn "V is: " v)
-			  (if (some #{v} @node-lst)
-			  (let [alt (+ (u dist) (dist-between u v))]
-			    (prn "alt" alt)
-			    (if (< alt (v dist))
-			      (dosync
-			       (ref-set dist (merge @dist {v alt}))
-			       (ref-set src (merge @src {v u}))))
-			    (prn "new dist src" @dist @src))))
-		      (recur (rest v))))))))))))
+  (loop [distances {
+{:1 {:2 3 :4 5}}
+ :2 {:1 3}
+ :4 {:1 5}}
+para cada vizinho,
+{vizinho {2
+{:2 {:1 3}
+ :4 {:1 5}}
+(def dist-map (ref {}))
+(defn update-neighbors
+  "Updates the status of neighbors within network.
+  A updated key in the dist-map looks like:
+  :neighbor [n d], where:
+  neighbor is a neighbor of node, 
+  n is the node, and
+  d is the distance within node and neighbor"
+  [node]
+  (mapcat #(list 1 [(dist-between node %1) node])
+	  (neighbors node)))
